@@ -1,0 +1,29 @@
+{
+  "name": "sedncae-ad-server",
+  "version": "1.0.0",
+  "description": "Backend service for generating outdoor advertisement images with the Sedncae 4.0 model.",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "lint": "node ./scripts/lint.js",
+    "test": "npm run lint"
+  },
+  "keywords": [
+    "sedncae",
+    "ads",
+    "image-generation",
+    "outdoor"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
