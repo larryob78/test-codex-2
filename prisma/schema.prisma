@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  templateId  String
+  createdAt   DateTime @default(now())
+  rows        Row[]
+}
+
+model Row {
+  id           String   @id @default(cuid())
+  projectId    String
+  project      Project  @relation(fields: [projectId], references: [id])
+  data         Json
+  outputPreset String   @default("1080x1920")
+  status       RowStatus @default(PENDING)
+  renderId     String?  @unique
+  downloadUrl  String?
+  errorMessage String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum RowStatus {
+  PENDING
+  QUEUED
+  RENDERING
+  SUCCEEDED
+  FAILED
+}
