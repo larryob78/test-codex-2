@@ -1,0 +1,5 @@
+image:
+  repository: api
+  tag: latest
+service:
+  port: 4000

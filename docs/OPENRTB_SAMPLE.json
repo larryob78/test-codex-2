@@ -1,0 +1,12 @@
+{
+  "id": "req-1",
+  "imp": [
+    {
+      "id": "imp-1"
+    }
+  ],
+  "user": {
+    "id": "user-1",
+    "consent": true
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "adtech-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "apps/api",
+    "apps/analytics-api",
+    "packages/*"
+  ],
+  "scripts": {
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "build": "pnpm -r build"
+  },
+  "packageManager": "pnpm@8.15.4"
+}

@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bidder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bidder
+  template:
+    metadata:
+      labels:
+        app: bidder
+    spec:
+      containers:
+        - name: bidder
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 8080

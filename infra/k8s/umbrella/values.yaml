@@ -1,0 +1,16 @@
+web:
+  image:
+    repository: ghcr.io/example/web
+    tag: latest
+api:
+  image:
+    repository: ghcr.io/example/api
+    tag: latest
+bidder:
+  image:
+    repository: ghcr.io/example/bidder
+    tag: latest
+analytics-api:
+  image:
+    repository: ghcr.io/example/analytics-api
+    tag: latest

@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  ADVERTISER
+  ANALYST
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ENDED
+}
+
+enum CampaignGoal {
+  CLICKS
+  CONVERSIONS
+  REACH
+}
+
+enum CreativeKind {
+  TEXT
+  IMAGE
+  VIDEO
+}
+
+enum CreativeStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
+model Organization {
+  id        String     @id @default(cuid())
+  name      String
+  users     User[]
+  campaigns Campaign[]
+}
+
+model User {
+  id     String @id @default(cuid())
+  email  String @unique
+  role   Role
+  orgId  String
+  org    Organization @relation(fields: [orgId], references: [id])
+}
+
+model Campaign {
+  id               String          @id @default(cuid())
+  orgId            String
+  name             String
+  status           CampaignStatus
+  startAt          DateTime
+  endAt            DateTime
+  dailyBudgetCents Int
+  totalBudgetCents Int
+  goal             CampaignGoal
+  lineItems        LineItem[]
+  creatives        Creative[]
+  spentTodayCents  Int             @default(0)
+  spentTotalCents  Int             @default(0)
+  createdAt        DateTime        @default(now())
+}
+
+model LineItem {
+  id           String   @id @default(cuid())
+  campaignId   String
+  countryCodes String[]
+  devices      String[]
+  contexts     String[]
+  segments     String[]
+  campaign     Campaign @relation(fields: [campaignId], references: [id])
+}
+
+model Creative {
+  id         String         @id @default(cuid())
+  campaignId String
+  kind       CreativeKind
+  headline   String?
+  body       String?
+  mediaUrl   String?
+  width      Int?
+  height     Int?
+  status     CreativeStatus @default(PENDING_REVIEW)
+  campaign   Campaign       @relation(fields: [campaignId], references: [id])
+}

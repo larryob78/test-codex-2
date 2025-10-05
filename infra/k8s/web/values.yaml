@@ -1,0 +1,5 @@
+image:
+  repository: web
+  tag: latest
+service:
+  port: 3000
