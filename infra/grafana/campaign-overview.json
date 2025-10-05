@@ -1,0 +1,14 @@
+{
+  "title": "Campaign Overview",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Spend",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total[5m]))"
+        }
+      ]
+    }
+  ]
+}

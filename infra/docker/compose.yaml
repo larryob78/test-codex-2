@@ -1,0 +1,103 @@
+version: '3.9'
+services:
+  web:
+    build:
+      context: ../..
+      dockerfile: infra/docker/web.Dockerfile
+    environment:
+      NEXT_PUBLIC_API_URL: http://api:4000
+      AI_LLM_URL: http://ai-llm:8000/generate-copy
+      AI_IMAGE_URL: http://ai-image:8001/generate-image
+      AI_VIDEO_URL: http://ai-video:8002/generate-video
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/api.Dockerfile
+    environment:
+      DATABASE_URL: postgresql://adtech:adtech@postgres:5432/adtech
+    ports:
+      - '4000:4000'
+    depends_on:
+      - postgres
+  analytics-api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/analytics-api.Dockerfile
+    ports:
+      - '4100:4100'
+  bidder:
+    build:
+      context: ../..
+      dockerfile: infra/docker/bidder.Dockerfile
+    ports:
+      - '8080:8080'
+  ai-llm:
+    build:
+      context: ../..
+      dockerfile: infra/docker/ai-llm.Dockerfile
+    ports:
+      - '8000:8000'
+  ai-image:
+    build:
+      context: ../..
+      dockerfile: infra/docker/ai-image.Dockerfile
+    ports:
+      - '8001:8001'
+  ai-video:
+    build:
+      context: ../..
+      dockerfile: infra/docker/ai-video.Dockerfile
+    ports:
+      - '8002:8002'
+  postgres:
+    image: postgres:15.4-alpine
+    environment:
+      POSTGRES_USER: adtech
+      POSTGRES_PASSWORD: adtech
+      POSTGRES_DB: adtech
+    ports:
+      - '5432:5432'
+  redis:
+    image: redis:7.2-alpine
+    ports:
+      - '6379:6379'
+  redpanda:
+    image: redpanda/redpanda:v23.2.10
+    command:
+      - redpanda
+      - start
+      - --smp
+      - '1'
+      - --memory
+      - 512M
+      - --overprovisioned
+      - --node-id
+      - '0'
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:9092
+    ports:
+      - '9092:9092'
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.8
+    ports:
+      - '8123:8123'
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0
+    command: ['start-dev']
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - '8080:8080'
+  grafana:
+    image: grafana/grafana:10.2.3
+    ports:
+      - '3001:3000'
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    ports:
+      - '9090:9090'

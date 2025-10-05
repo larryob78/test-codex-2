@@ -1,0 +1,16 @@
+apiVersion: v2
+name: adtech-stack
+version: 0.1.0
+dependencies:
+  - name: web
+    version: 0.1.0
+    repository: "file://../web"
+  - name: api
+    version: 0.1.0
+    repository: "file://../api"
+  - name: bidder
+    version: 0.1.0
+    repository: "file://../bidder"
+  - name: analytics-api
+    version: 0.1.0
+    repository: "file://../analytics-api"

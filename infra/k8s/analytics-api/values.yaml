@@ -1,0 +1,5 @@
+image:
+  repository: analytics-api
+  tag: latest
+service:
+  port: 4100
