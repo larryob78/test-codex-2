@@ -3,6 +3,8 @@ const particleCanvas = document.getElementById("particleCanvas");
 const particleCtx = particleCanvas.getContext("2d");
 const motionCanvas = document.createElement("canvas");
 const motionCtx = motionCanvas.getContext("2d");
+const startButton = document.getElementById("startButton");
+const notice = document.querySelector(".notice");
 
 const particles = [];
 const MAX_PARTICLES = 600;
@@ -11,38 +13,71 @@ const MOTION_THRESHOLD = 40; // sensitivity for motion detection
 
 let previousFrame = null;
 let animationFrameId = null;
+let activeStream = null;
+let hasLoopStarted = false;
 
 async function setupCamera() {
+  if (!startButton) {
+    return;
+  }
+
+  if (activeStream) {
+    return;
+  }
+
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    displayError(
-      "Webcam access is not supported in this browser. Please try a modern browser such as Chrome or Firefox."
+    setNotice(
+      "Webcam access is not supported in this browser. Please try a modern browser such as Chrome or Firefox.",
+      true
     );
+    startButton.disabled = true;
     return;
   }
 
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
+    startButton.disabled = true;
+    startButton.textContent = "Requesting access...";
+    setNotice("Please allow camera access in the browser prompt to start the effect.");
+
+    activeStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: "user" },
       audio: false,
     });
-    video.srcObject = stream;
+
+    video.srcObject = activeStream;
     await video.play();
     handleResize();
-    startLoop();
+    if (!hasLoopStarted) {
+      startLoop();
+      hasLoopStarted = true;
+    }
+    startButton.textContent = "Camera running";
+    setTimeout(() => {
+      startButton.style.display = "none";
+    }, 800);
+    setNotice("Move in front of the camera to paint with particles.");
   } catch (error) {
     console.error("Unable to access camera", error);
-    displayError(
-      "Camera access was blocked. Please allow webcam permissions and reload the page."
+    if (activeStream) {
+      activeStream.getTracks().forEach((track) => track.stop());
+      activeStream = null;
+    }
+    setNotice(
+      "Camera access was blocked. Please allow webcam permissions and try again.",
+      true
     );
+    startButton.disabled = false;
+    startButton.textContent = "Try again";
   }
 }
 
-function displayError(message) {
-  const notice = document.querySelector(".notice");
-  if (notice) {
-    notice.textContent = message;
-    notice.classList.add("error");
+function setNotice(message, isError = false) {
+  if (!notice) {
+    return;
   }
+
+  notice.textContent = message;
+  notice.classList.toggle("error", Boolean(isError));
 }
 
 function handleResize() {
@@ -167,4 +202,14 @@ function drawParticles() {
 window.addEventListener("resize", handleResize);
 video.addEventListener("loadedmetadata", handleResize);
 
-setupCamera();
+if (startButton) {
+  startButton.addEventListener("click", () => {
+    setupCamera();
+  });
+}
+
+window.addEventListener("beforeunload", () => {
+  if (activeStream) {
+    activeStream.getTracks().forEach((track) => track.stop());
+  }
+});
