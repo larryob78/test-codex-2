@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AR GIF Studio</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>AR GIF Studio</h1>
+      <p class="tagline">Blend your camera feed with animated GIFs and text overlays in real-time.</p>
+    </header>
+
+    <details class="quick-help">
+      <summary>📱 Phone setup tips</summary>
+      <ol>
+        <li>Serve this folder from your computer (for example <code>python -m http.server 8000</code>).</li>
+        <li>Join the same Wi-Fi network on your phone and computer.</li>
+        <li>On your phone browser, visit the computer’s IP address (e.g. <code>http://192.168.1.42:8000</code>).</li>
+        <li>Tap <strong>Start camera</strong> and allow the permission prompt.</li>
+        <li>Add GIFs or text overlays, then capture stills to download.</li>
+      </ol>
+    </details>
+
+    <main class="app">
+      <section class="preview-panel">
+        <div class="video-wrapper">
+          <video id="camera" autoplay playsinline muted></video>
+          <div id="overlay-stage" class="overlay-stage" aria-live="polite"></div>
+        </div>
+        <div class="preview-controls">
+          <button id="startCamera" class="primary">Start camera</button>
+          <label class="toggle">
+            <input type="checkbox" id="useRearCamera" />
+            <span>Use rear camera</span>
+          </label>
+          <button id="captureFrame" class="secondary" disabled>Capture still</button>
+        </div>
+        <canvas id="snapshotCanvas" class="snapshot" aria-hidden="true"></canvas>
+      </section>
+
+      <aside class="control-panel" aria-label="Overlay controls">
+        <section>
+          <h2>GIF overlays</h2>
+          <div class="field-group">
+            <label for="gifUrl">GIF URL</label>
+            <div class="field-row">
+              <input id="gifUrl" type="url" placeholder="https://" />
+              <button id="addGifFromUrl" class="secondary">Add</button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="file-upload">
+              <input id="gifFile" type="file" accept="image/gif,image/webp" />
+              <span>Upload GIF</span>
+            </label>
+          </div>
+
+          <div id="gifSuggestions" class="suggestion-grid" aria-label="GIF suggestions"></div>
+        </section>
+
+        <section>
+          <h2>Text overlays</h2>
+          <div class="field-group">
+            <label for="textContent">Text</label>
+            <input id="textContent" type="text" placeholder="Type your caption" />
+          </div>
+          <div class="field-row">
+            <label for="textColor">Color</label>
+            <input id="textColor" type="color" value="#ffffff" />
+            <label for="textBackground">Background</label>
+            <input id="textBackground" type="color" value="#00000080" />
+          </div>
+          <div class="field-row">
+            <label for="textSize">Size</label>
+            <input id="textSize" type="range" min="16" max="96" value="32" />
+            <span id="textSizeValue">32px</span>
+          </div>
+          <button id="addText" class="secondary">Add text</button>
+        </section>
+
+        <section>
+          <h2>Session</h2>
+          <button id="clearOverlays" class="danger" disabled>Clear overlays</button>
+          <button id="downloadSnapshot" class="primary" disabled>Download last still</button>
+        </section>
+      </aside>
+    </main>
+
+    <template id="overlayTemplate">
+      <div class="overlay-item" draggable="true" tabindex="0">
+        <div class="overlay-controls" aria-hidden="true">
+          <button class="remove" title="Remove">✕</button>
+          <button class="resize" title="Resize" aria-label="Resize"></button>
+        </div>
+        <div class="content"></div>
+      </div>
+    </template>
+
+    <footer class="app-footer">
+      <p>
+        Works best on modern mobile browsers. Allow camera access when prompted. GIFs from Nana Banana,
+        Giphy, or other AI generators can be pasted via URL or uploaded.
+      </p>
+    </footer>
+
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
