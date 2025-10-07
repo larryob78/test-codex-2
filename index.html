@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Social Studio AI</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="hero">
+    <div class="hero__content">
+      <h1>Social Studio AI</h1>
+      <p>Instant campaigns in every format. Drop in your brand and a spark of an idea &mdash; we take it from there.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Create a campaign</h2>
+      <form id="brief-form" class="brief-form">
+        <div class="field">
+          <label for="brand">Brand</label>
+          <input id="brand" name="brand" placeholder="e.g. Aurora Athletics" required />
+        </div>
+        <div class="field">
+          <label for="idea">Idea or prompt</label>
+          <textarea id="idea" name="idea" rows="3" placeholder="e.g. Launching breathable workout hoodies for fall runs" required></textarea>
+        </div>
+        <div class="field">
+          <label for="tone">Tone</label>
+          <select id="tone" name="tone">
+            <option value="bold">Bold &amp; energetic</option>
+            <option value="friendly">Warm &amp; friendly</option>
+            <option value="refined">Premium &amp; refined</option>
+          </select>
+        </div>
+        <div class="field field--inline">
+          <label for="cta">Call to action</label>
+          <input id="cta" name="cta" placeholder="e.g. Shop the drop" />
+        </div>
+        <button type="submit" class="button">Generate campaign</button>
+      </form>
+    </section>
+
+    <section class="panel panel--output" id="output">
+      <div class="empty-state">
+        <h2>Your launchpad awaits</h2>
+        <p>Fill in the brief and Social Studio AI will draft copy and visuals across every channel.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Built for content teams that move at the speed of culture.</p>
+  </footer>
+
+  <template id="post-template">
+    <article class="post">
+      <header class="post__header">
+        <h3 class="post__channel"></h3>
+        <span class="post__size"></span>
+      </header>
+      <div class="post__body">
+        <figure class="post__image-wrapper">
+          <img class="post__image" alt="Generated creative" />
+        </figure>
+        <div class="post__copy"></div>
+      </div>
+    </article>
+  </template>
+
+  <script src="script.js" type="module"></script>
+</body>
+</html>
