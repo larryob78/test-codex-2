@@ -8,10 +8,11 @@ Each parody is rendered as a minimal console animation using ASCII art so the
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 import os
 import textwrap
 import time
-from typing import Dict, Iterable, List, Sequence
+from typing import Iterable, List, Sequence
 
 
 def clear() -> None:
@@ -32,34 +33,44 @@ def play_animation(frames: Iterable[str], delay: float = 0.6) -> None:
         time.sleep(delay)
 
 
-def render_ad(ad: Dict[str, object], delay: float = 0.6) -> None:
+def render_ad(ad: ParodyAd, delay: float = 0.6) -> None:
     """Render a single parody advertisement."""
-    title = ad["title"]
-    brand = ad["brand"]
-    description = ad["description"]
-    frames = ad["frames"]
-
     border = "=" * 80
     print(border)
-    print(f"{title} — {brand}")
+    print(f"{ad.title} — {ad.brand}")
     print(border)
-    print(description)
+    print(ad.description)
     time.sleep(1.5)
-    play_animation(frames, delay=delay)
-    print("\nEND CARD: " + ad["tagline"])
+    play_animation(ad.frames, delay=delay)
+    print("\nEND CARD: " + ad.tagline)
     print(border)
     time.sleep(2)
 
 
-ADS: List[Dict[str, object]] = [
-    {
-        "title": "Cadbunny's Midnight Solo",
-        "brand": "Cadbunny Confections (a wink to Cadbury)",
-        "description": (
+@dataclass(frozen=True)
+class ParodyAd:
+    """Container representing a single parody advertisement."""
+
+    title: str
+    brand: str
+    description: str
+    frames: Sequence[str]
+    tagline: str
+
+    @property
+    def slug(self) -> str:
+        return slugify(self.title)
+
+
+ADS: Sequence[ParodyAd] = (
+    ParodyAd(
+        title="Cadbunny's Midnight Solo",
+        brand="Cadbunny Confections (a wink to Cadbury)",
+        description=(
             "A moonlit office, a forgotten drum kit, and a zen bunny breaking into "
             "a chocolate-fueled groove."
         ),
-        "frames": [
+        frames=(
             r"""
              (\_/)
             =( '.' )=     *thump*
@@ -80,17 +91,17 @@ ADS: List[Dict[str, object]] = [
              (")(")    ╔═╗ ╔═╗ ╔═╗
                         ╚═╝ ╚═╝ ╚═╝  "Because smooth gets loud."
             """,
-        ],
-        "tagline": "Smooth chocolate. Surprisingly percussive.",
-    },
-    {
-        "title": "Only Brighter Balls",
-        "brand": "Brazza Pixel TVs (nodding to Sony BRAVIA)",
-        "description": (
+        ),
+        tagline="Smooth chocolate. Surprisingly percussive.",
+    ),
+    ParodyAd(
+        title="Only Brighter Balls",
+        brand="Brazza Pixel TVs (nodding to Sony BRAVIA)",
+        description=(
             "Thousands of luminous emoji spheres tumble down a tech blogger's street "
             "to prove color accuracy."
         ),
-        "frames": [
+        frames=(
             r"""
             Street Level Cam
             ----------------
@@ -110,17 +121,17 @@ ADS: List[Dict[str, object]] = [
                😁     😆
             BRIGHTER. BOUNCIER. NERDIER.
             """,
-        ],
-        "tagline": "Turn your living room into a joyful avalanche of color.",
-    },
-    {
-        "title": "Guinness Coder Surfer",
-        "brand": "Stoutware",
-        "description": (
+        ),
+        tagline="Turn your living room into a joyful avalanche of color.",
+    ),
+    ParodyAd(
+        title="Guinness Coder Surfer",
+        brand="Stoutware",
+        description=(
             "Black-and-white waves become cascading lines of code as a lone surfer "
             "waits for the perfect deployment window."
         ),
-        "frames": [
+        frames=(
             r"""
             wait_for_wave()
             while tide < perfect_release:
@@ -136,17 +147,17 @@ ADS: List[Dict[str, object]] = [
             push --force
             pint.pour()
             """,
-        ],
-        "tagline": "Good things come to those who git fetch.",
-    },
-    {
-        "title": "Old Syntax Guy",
-        "brand": "Code Spice",
-        "description": (
+        ),
+        tagline="Good things come to those who git fetch.",
+    ),
+    ParodyAd(
+        title="Old Syntax Guy",
+        brand="Code Spice",
+        description=(
             "A swaggering developer shifts from debugging to publishing packages, all "
             "while addressing the audience directly."
         ),
-        "frames": [
+        frames=(
             r"""
             Look at your code.
             Now back to mine.
@@ -163,17 +174,17 @@ ADS: List[Dict[str, object]] = [
             Smell that? That's
             freshly compiled success.
             """,
-        ],
-        "tagline": "Code Spice: Smell like a freshly merged branch.",
-    },
-    {
-        "title": "April 2084",
-        "brand": "Pear Computers",
-        "description": (
+        ),
+        tagline="Code Spice: Smell like a freshly merged branch.",
+    ),
+    ParodyAd(
+        title="April 2084",
+        brand="Pear Computers",
+        description=(
             "An athlete in neon sneakers storms a gray conference of algorithmic "
             "overlords to hurl a glowing debugging hammer."
         ),
-        "frames": [
+        frames=(
             r"""
             Citizens of 2084,
             Today we unveil
@@ -189,17 +200,17 @@ ADS: List[Dict[str, object]] = [
             been an email!"
             (crash)
             """,
-        ],
-        "tagline": "Pear: Why conform when you can alt+f4?",
-    },
-    {
-        "title": "Honda Frog",
-        "brand": "Hondoodle",
-        "description": (
+        ),
+        tagline="Pear: Why conform when you can alt+f4?",
+    ),
+    ParodyAd(
+        title="Honda Frog",
+        brand="Hondoodle",
+        description=(
             "Instead of car parts knocking into each other, a single calm frog sets "
             "off a chain reaction of gentle ribbits that still starts the hybrid."
         ),
-        "frames": [
+        frames=(
             r"""
             Ribbit ->
               ribbit ->
@@ -216,17 +227,17 @@ ADS: List[Dict[str, object]] = [
             Then...
             *electric hum*
             """,
-        ],
-        "tagline": "Precision engineering, amphibian calm.",
-    },
-    {
-        "title": "Write the Feature",
-        "brand": "Nike.dev",
-        "description": (
+        ),
+        tagline="Precision engineering, amphibian calm.",
+    ),
+    ParodyAd(
+        title="Write the Feature",
+        brand="Nike.dev",
+        description=(
             "Rapid-fire cuts between athletes-turned-programmers shipping critical "
             "features seconds before launch."
         ),
-        "frames": [
+        frames=(
             r"""
             // Stadium lights flare
             deployFeature("clutch_mode")
@@ -239,10 +250,10 @@ ADS: List[Dict[str, object]] = [
             r"""
             Just ship it.
             """,
-        ],
-        "tagline": "Legendary commits start with a single keystroke.",
-    },
-]
+        ),
+        tagline="Legendary commits start with a single keystroke.",
+    ),
+)
 
 
 def slugify(text: str) -> str:
@@ -258,12 +269,11 @@ def list_ads() -> Sequence[str]:
     """Return human-friendly information about each available parody."""
     lines: List[str] = []
     for index, ad in enumerate(ADS, start=1):
-        slug = slugify(ad["title"])
-        lines.append(f"{index}. {ad['title']} (slug: {slug})")
+        lines.append(f"{index}. {ad.title} (slug: {ad.slug})")
     return lines
 
 
-def find_ad(identifier: str) -> Dict[str, object]:
+def find_ad(identifier: str) -> ParodyAd:
     """Find an advertisement by slug, title, or 1-based index."""
 
     normalized = identifier.strip().lower()
@@ -273,20 +283,19 @@ def find_ad(identifier: str) -> Dict[str, object]:
         if 0 <= index < len(ADS):
             return ADS[index]
 
-    matches: List[Dict[str, object]] = []
+    matches: List[ParodyAd] = []
     for ad in ADS:
-        if slugify(ad["title"]) == normalized:
+        if ad.slug == normalized:
             return ad
-        if ad["title"].lower() == normalized:
+        if ad.title.lower() == normalized:
             return ad
-        if ad["brand"].lower() == normalized:
+        if ad.brand.lower() == normalized:
             return ad
-        slug = slugify(ad["title"])
-        if normalized and normalized in slug:
+        if normalized and normalized in ad.slug:
             matches.append(ad)
-        elif normalized and normalized in ad["title"].lower():
+        elif normalized and normalized in ad.title.lower():
             matches.append(ad)
-        elif normalized and normalized in ad["brand"].lower():
+        elif normalized and normalized in ad.brand.lower():
             matches.append(ad)
 
     if len(matches) == 1:
@@ -298,39 +307,51 @@ def find_ad(identifier: str) -> Dict[str, object]:
     )
 
 
-def preview_ad(ad: Dict[str, object]) -> None:
+def find_ads(identifiers: Sequence[str]) -> Sequence[ParodyAd]:
+    """Resolve a sequence of identifiers into unique advertisements."""
+
+    if not identifiers:
+        return []
+
+    resolved: List[ParodyAd] = []
+    seen: set[str] = set()
+    for identifier in identifiers:
+        ad = find_ad(identifier)
+        if ad.slug not in seen:
+            resolved.append(ad)
+            seen.add(ad.slug)
+    return resolved
+
+
+def preview_ad(ad: ParodyAd) -> None:
     """Print a static preview of an advertisement without animations."""
 
     border = "=" * 80
     print(border)
-    print(f"{ad['title']} — {ad['brand']}")
+    print(f"{ad.title} — {ad.brand}")
     print(border)
-    wrapped = textwrap.fill(ad["description"], width=76)
+    wrapped = textwrap.fill(ad.description, width=76)
     print(wrapped)
 
-    for idx, frame in enumerate(ad["frames"], start=1):
+    for idx, frame in enumerate(ad.frames, start=1):
         print("\n" + f"Frame {idx}".center(80, "-"))
         frame_text = textwrap.dedent(frame).rstrip()
         print(frame_text)
 
-    print("\nEND CARD: " + ad["tagline"])
+    print("\nEND CARD: " + ad.tagline)
     print(border)
 
 
-def run_showcase(selected: Dict[str, object] | None, preview: bool, delay: float) -> None:
+def run_showcase(ads: Sequence[ParodyAd], preview: bool, delay: float) -> None:
     """Run the animated showcase or print previews depending on flags."""
 
-    ads: Sequence[Dict[str, object]]
-    if selected is None:
-        ads = ADS
-    else:
-        ads = [selected]
+    target_ads = ads if ads else ADS
 
     if preview:
-        for ad in ads:
+        for ad in target_ads:
             preview_ad(ad)
     else:
-        for ad in ads:
+        for ad in target_ads:
             render_ad(ad, delay=delay)
 
 
@@ -343,8 +364,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--ad",
         metavar="IDENTIFIER",
+        action="append",
+        nargs="+",
         help=(
-            "Render a single parody by number, title, slug, or brand. "
+            "Render selected parodies by number, title, slug, or brand. "
+            "Repeat or comma-separate identifiers to view multiple entries. "
             "By default every ad plays in sequence."
         ),
     )
@@ -381,8 +405,15 @@ def main() -> None:
         return
 
     try:
-        selected_ad = find_ad(args.ad) if args.ad else None
-        run_showcase(selected_ad, preview=args.preview, delay=args.delay)
+        identifiers: List[str] = []
+        if args.ad:
+            for group in args.ad:
+                for raw in group:
+                    parts = [part.strip() for part in raw.split(",") if part.strip()]
+                    identifiers.extend(parts)
+
+        selected_ads = find_ads(identifiers)
+        run_showcase(selected_ads, preview=args.preview, delay=args.delay)
     except ValueError as exc:
         parser.error(str(exc))
     except KeyboardInterrupt:

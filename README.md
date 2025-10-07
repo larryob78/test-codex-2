@@ -36,14 +36,16 @@ visual gags at a glance.
 python parody_ads.py --preview
 ```
 
-### Focusing on a single parody
+### Focusing on specific parodies
 
-Pass the title, slug, brand, or list number via `--ad` to preview or animate a
-specific spoof:
+Pass the title, slug, brand, or list number via `--ad` to preview or animate
+specific spoofs. You can repeat the flag or provide comma-separated values to
+queue multiple ads:
 
 ```bash
 python parody_ads.py --ad surfer
 python parody_ads.py --ad 3 --preview
+python parody_ads.py --preview --ad 1,4 --ad "pear computers"
 ```
 
 Run `python parody_ads.py --list` to see every available identifier, and use
