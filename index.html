@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retro Robot Pursuit Monitor</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --grid-color: rgba(20, 255, 140, 0.2);
+      --scanline-color: rgba(0, 0, 0, 0.2);
+      --glow: 0 0 10px rgba(0, 255, 180, 0.4);
+      --font-stack: "Press Start 2P", "VT323", "Share Tech Mono", monospace;
+    }
+
+    @import url("https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap");
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #021b1e 0%, #01080a 70%, #000 100%);
+      color: #7bffd5;
+      font-family: var(--font-stack);
+      overflow: hidden;
+    }
+
+    .crt {
+      position: relative;
+      padding: 2.5rem;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(0, 255, 200, 0.08), rgba(0, 0, 0, 0.85));
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), inset 0 0 45px rgba(0, 255, 210, 0.1);
+    }
+
+    .screen {
+      position: relative;
+      width: min(960px, 92vw);
+      aspect-ratio: 16/10;
+      border-radius: 12px;
+      background: #021012;
+      overflow: hidden;
+      box-shadow: inset 0 0 60px rgba(0, 255, 180, 0.2);
+    }
+
+    .screen::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+          rgba(0, 0, 0, 0),
+          rgba(0, 0, 0, 0) 2px,
+          var(--scanline-color) 3px
+        ),
+        linear-gradient(135deg, rgba(0, 255, 120, 0.08), rgba(0, 0, 0, 0.6));
+      mix-blend-mode: overlay;
+      pointer-events: none;
+      animation: flicker 8s infinite;
+    }
+
+    @keyframes flicker {
+      0%, 18%, 22%, 25%, 53%, 57%, 100% {
+        opacity: 0.7;
+      }
+      20%, 24%, 55% {
+        opacity: 0.45;
+      }
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+      filter: contrast(1.15) saturate(1.4) drop-shadow(0 0 10px rgba(0, 255, 150, 0.3));
+    }
+
+    h1 {
+      position: absolute;
+      top: 1.2rem;
+      left: 1.8rem;
+      font-size: clamp(1rem, 2vw, 1.4rem);
+      letter-spacing: 0.6rem;
+      text-transform: uppercase;
+      text-shadow: var(--glow);
+      color: #7cffc2;
+      pointer-events: none;
+      filter: drop-shadow(0 0 8px rgba(0, 255, 170, 0.5));
+    }
+
+    .hud {
+      position: absolute;
+      bottom: 1.2rem;
+      left: 1.8rem;
+      right: 1.8rem;
+      display: flex;
+      justify-content: space-between;
+      font-size: clamp(0.75rem, 1.6vw, 0.95rem);
+      letter-spacing: 0.2rem;
+      text-transform: uppercase;
+      color: rgba(124, 255, 194, 0.8);
+      pointer-events: none;
+    }
+
+    .hud span {
+      text-shadow: var(--glow);
+    }
+
+    .start-overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(0, 12, 10, 0.78);
+      backdrop-filter: blur(2px);
+      z-index: 2;
+      transition: opacity 0.6s ease;
+    }
+
+    .start-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .start-button {
+      padding: 0.85rem 1.8rem;
+      border: 1px solid rgba(100, 255, 200, 0.6);
+      border-radius: 8px;
+      background: rgba(3, 60, 52, 0.8);
+      color: #9bffe6;
+      font-family: var(--font-stack);
+      font-size: 0.9rem;
+      letter-spacing: 0.3rem;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 0 18px rgba(0, 255, 190, 0.35);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .start-button:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 0 26px rgba(0, 255, 190, 0.55);
+    }
+
+    .corner-led {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #0affd6 0%, rgba(0, 255, 173, 0.1) 65%, transparent 80%);
+      box-shadow: 0 0 12px rgba(0, 255, 153, 0.6);
+      animation: pulse 2.6s infinite ease-in-out;
+    }
+
+    .corner-led:nth-child(1) { top: 14px; left: 14px; }
+    .corner-led:nth-child(2) { top: 14px; right: 14px; animation-delay: 0.6s; }
+    .corner-led:nth-child(3) { bottom: 14px; left: 14px; animation-delay: 1.2s; }
+    .corner-led:nth-child(4) { bottom: 14px; right: 14px; animation-delay: 1.8s; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.55; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="crt">
+    <div class="screen">
+      <div class="corner-led"></div>
+      <div class="corner-led"></div>
+      <div class="corner-led"></div>
+      <div class="corner-led"></div>
+      <h1>OMEGA SYS // SECURITY FEED</h1>
+      <div class="start-overlay" id="startOverlay">
+        <button class="start-button" id="startButton">Boot Audio Signal</button>
+      </div>
+      <canvas id="retroCanvas" width="960" height="600" aria-label="Retro computer monitor showing robots chasing humans"></canvas>
+      <div class="hud">
+        <span>Robotics Division 7</span>
+        <span>Tracking: HUMANS // RUN</span>
+        <span id="timer">00:00:00</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('retroCanvas');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    const pixel = 6;
+
+    const robotPattern = [
+      '00111100',
+      '01111110',
+      '11100111',
+      '11111111',
+      '11011011',
+      '00100100',
+      '01000010',
+      '10100101'
+    ];
+
+    const humanPattern = [
+      '00111000',
+      '01111100',
+      '01111100',
+      '00111000',
+      '00111000',
+      '01101100',
+      '11000110',
+      '10000010'
+    ];
+
+    const glitchLines = new Array(18).fill(0).map(() => ({
+      y: Math.random() * height,
+      speed: (Math.random() * 0.6) + 0.2,
+      alpha: Math.random() * 0.3 + 0.05
+    }));
+
+    function createEntity(type) {
+      return {
+        type,
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 2,
+        vy: (Math.random() - 0.5) * 2,
+        pulse: Math.random() * Math.PI * 2
+      };
+    }
+
+    const robots = Array.from({ length: 14 }, () => createEntity('robot'));
+    const humans = Array.from({ length: 8 }, () => createEntity('human'));
+
+    const backgroundStars = Array.from({ length: 60 }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      alpha: Math.random() * 0.6 + 0.2,
+      radius: Math.random() * 2 + 0.5
+    }));
+
+    function wrap(entity) {
+      if (entity.x < -40) entity.x = width + 40;
+      if (entity.x > width + 40) entity.x = -40;
+      if (entity.y < -40) entity.y = height + 40;
+      if (entity.y > height + 40) entity.y = -40;
+    }
+
+    function drawSprite(entity) {
+      const pattern = entity.type === 'robot' ? robotPattern : humanPattern;
+      const color = entity.type === 'robot' ? '#4afff3' : '#ff7bf3';
+      ctx.save();
+      ctx.translate(entity.x, entity.y);
+      const scale = 1 + Math.sin(entity.pulse) * 0.2;
+      ctx.scale(scale, scale);
+      ctx.translate(-pattern[0].length * pixel / 2, -pattern.length * pixel / 2);
+      ctx.globalAlpha = 0.85;
+      for (let row = 0; row < pattern.length; row += 1) {
+        for (let col = 0; col < pattern[row].length; col += 1) {
+          if (pattern[row][col] === '1') {
+            ctx.fillStyle = color;
+            ctx.fillRect(col * pixel, row * pixel, pixel, pixel);
+            ctx.fillStyle = 'rgba(0, 255, 200, 0.35)';
+            ctx.fillRect(col * pixel, row * pixel, pixel, 1);
+          }
+        }
+      }
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+
+    function drawBackground(delta) {
+      ctx.fillStyle = '#000911';
+      ctx.fillRect(0, 0, width, height);
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      gradient.addColorStop(0, 'rgba(0, 130, 120, 0.35)');
+      gradient.addColorStop(0.4, 'rgba(0, 30, 40, 0.25)');
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0.8)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = 'rgba(0, 200, 160, 0.18)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      const gridSize = 40;
+      for (let x = -gridSize * 2; x < width + gridSize * 2; x += gridSize) {
+        ctx.moveTo(x + (delta * 0.06) % gridSize, 0);
+        ctx.lineTo(x + (delta * 0.06) % gridSize, height);
+      }
+      for (let y = -gridSize * 2; y < height + gridSize * 2; y += gridSize) {
+        ctx.moveTo(0, y + (delta * 0.1) % gridSize);
+        ctx.lineTo(width, y + (delta * 0.1) % gridSize);
+      }
+      ctx.stroke();
+
+      backgroundStars.forEach((star, index) => {
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(90, 255, 200, ${star.alpha})`;
+        ctx.arc(star.x, (star.y + delta * (0.02 + index * 0.0003)) % height, star.radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function updateEntities(delta) {
+      robots.forEach(robot => {
+        let nearest = null;
+        let minDist = Infinity;
+        humans.forEach(human => {
+          const dx = human.x - robot.x;
+          const dy = human.y - robot.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < minDist) {
+            minDist = dist;
+            nearest = { dx, dy, human };
+          }
+        });
+        if (nearest) {
+          const speed = 0.06 * delta;
+          const norm = Math.max(Math.hypot(nearest.dx, nearest.dy), 0.001);
+          robot.vx += (nearest.dx / norm) * speed;
+          robot.vy += (nearest.dy / norm) * speed;
+        }
+        robot.vx += (Math.random() - 0.5) * 0.03 * delta;
+        robot.vy += (Math.random() - 0.5) * 0.03 * delta;
+        const maxSpeed = 0.18 * delta;
+        const mag = Math.hypot(robot.vx, robot.vy);
+        if (mag > maxSpeed) {
+          robot.vx = (robot.vx / mag) * maxSpeed;
+          robot.vy = (robot.vy / mag) * maxSpeed;
+        }
+        robot.x += robot.vx;
+        robot.y += robot.vy;
+        robot.pulse += 0.08;
+        wrap(robot);
+      });
+
+      humans.forEach(human => {
+        let nearest = null;
+        let minDist = Infinity;
+        robots.forEach(robot => {
+          const dx = human.x - robot.x;
+          const dy = human.y - robot.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < minDist) {
+            minDist = dist;
+            nearest = { dx, dy };
+          }
+        });
+        if (nearest) {
+          const speed = 0.07 * delta;
+          const norm = Math.max(Math.hypot(nearest.dx, nearest.dy), 0.001);
+          human.vx += (nearest.dx / norm) * speed;
+          human.vy += (nearest.dy / norm) * speed;
+        }
+        human.vx += (Math.random() - 0.5) * 0.05 * delta;
+        human.vy += (Math.random() - 0.5) * 0.05 * delta;
+        const maxSpeed = 0.16 * delta;
+        const mag = Math.hypot(human.vx, human.vy);
+        if (mag > maxSpeed) {
+          human.vx = (human.vx / mag) * maxSpeed;
+          human.vy = (human.vy / mag) * maxSpeed;
+        }
+        human.x += human.vx;
+        human.y += human.vy;
+        human.pulse += 0.1;
+        wrap(human);
+      });
+    }
+
+    function drawGlitches(delta) {
+      glitchLines.forEach(glitch => {
+        glitch.y += glitch.speed * delta * 0.3;
+        if (glitch.y > height) {
+          glitch.y = -Math.random() * 40;
+          glitch.alpha = Math.random() * 0.3 + 0.05;
+        }
+        ctx.fillStyle = `rgba(0, 255, 170, ${glitch.alpha})`;
+        ctx.fillRect(0, glitch.y, width, 2);
+      });
+
+      if (Math.random() < 0.03) {
+        ctx.save();
+        const glitchHeight = 40 + Math.random() * 80;
+        const glitchY = Math.random() * (height - glitchHeight);
+        ctx.globalAlpha = 0.35;
+        ctx.drawImage(canvas, 0, glitchY, width, glitchHeight, Math.random() * 12 - 6, glitchY + Math.random() * 6 - 3, width, glitchHeight);
+        ctx.restore();
+      }
+    }
+
+    function draw(delta) {
+      drawBackground(delta);
+      updateEntities(delta);
+      robots.forEach(drawSprite);
+      humans.forEach(drawSprite);
+      drawGlitches(delta);
+      drawUI(delta);
+    }
+
+    const timerElement = document.getElementById('timer');
+    const startTimestamp = Date.now();
+
+    function drawUI() {
+      const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
+      const hours = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+      const minutes = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+      const seconds = String(elapsed % 60).padStart(2, '0');
+      timerElement.textContent = `${hours}:${minutes}:${seconds}`;
+
+      ctx.save();
+      ctx.globalAlpha = 0.45;
+      ctx.fillStyle = '#00ffd5';
+      ctx.font = '18px "Share Tech Mono", monospace';
+      ctx.fillText('CAPTURE FEED 23 // PURSUIT ACTIVE', 28, 42);
+      ctx.fillText('AUTONOMOUS HUNTER DRONES ONLINE', 28, height - 40);
+      ctx.textAlign = 'right';
+      ctx.fillText('HUMAN ESCAPE PROBABILITY: 2%', width - 28, height - 40);
+      ctx.restore();
+    }
+
+    let previous = performance.now();
+
+    function loop(now) {
+      const delta = Math.min((now - previous) * 0.6, 120);
+      previous = now;
+      draw(delta);
+      requestAnimationFrame(loop);
+    }
+
+    requestAnimationFrame(loop);
+
+    const startOverlay = document.getElementById('startOverlay');
+    const startButton = document.getElementById('startButton');
+    let audioStarted = false;
+    let beeperInterval;
+
+    function bootAudio() {
+      if (audioStarted) return;
+      audioStarted = true;
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+      const masterGain = audioContext.createGain();
+      masterGain.gain.value = 0.12;
+      masterGain.connect(audioContext.destination);
+
+      const drone = audioContext.createOscillator();
+      drone.type = 'square';
+      drone.frequency.value = 110;
+      const droneGain = audioContext.createGain();
+      droneGain.gain.value = 0.08;
+      drone.connect(droneGain).connect(masterGain);
+
+      const lfo = audioContext.createOscillator();
+      lfo.frequency.value = 0.45;
+      const lfoGain = audioContext.createGain();
+      lfoGain.gain.value = 35;
+      lfo.connect(lfoGain).connect(drone.frequency);
+
+      drone.start();
+      lfo.start();
+
+      beeperInterval = setInterval(() => {
+        const beep = audioContext.createOscillator();
+        const beepGain = audioContext.createGain();
+        beep.type = 'sawtooth';
+        beep.frequency.setValueAtTime(480, audioContext.currentTime);
+        beep.frequency.exponentialRampToValueAtTime(720, audioContext.currentTime + 0.2);
+        beepGain.gain.setValueAtTime(0.12, audioContext.currentTime);
+        beepGain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.24);
+        beep.connect(beepGain).connect(masterGain);
+        beep.start();
+        beep.stop(audioContext.currentTime + 0.25);
+      }, 950);
+
+      const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 2, audioContext.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < data.length; i += 1) {
+        data[i] = (Math.random() * 2 - 1) * 0.4;
+      }
+      const noise = audioContext.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+      const noiseFilter = audioContext.createBiquadFilter();
+      noiseFilter.type = 'bandpass';
+      noiseFilter.frequency.value = 800;
+      noiseFilter.Q.value = 6;
+      const noiseGain = audioContext.createGain();
+      noiseGain.gain.value = 0.02;
+      noise.connect(noiseFilter).connect(noiseGain).connect(masterGain);
+      noise.start();
+    }
+
+    startButton.addEventListener('click', () => {
+      bootAudio();
+      startOverlay.classList.add('hidden');
+      setTimeout(() => startOverlay.style.display = 'none', 700);
+    });
+
+    window.addEventListener('keydown', (event) => {
+      if (event.code === 'Space') {
+        bootAudio();
+        startOverlay.classList.add('hidden');
+        setTimeout(() => startOverlay.style.display = 'none', 700);
+      }
+    });
+  </script>
+</body>
+</html>
