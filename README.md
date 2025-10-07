@@ -25,3 +25,26 @@ python parody_ads.py
 
 Each parody will appear sequentially with simple terminal-clearing animations.
 Use `Ctrl+C` if you want to exit early.
+
+### Previewing the visuals
+
+If you'd rather skim the ASCII art without the timing effects, use the
+`--preview` flag. This prints each frame with labels so you can check the
+visual gags at a glance.
+
+```bash
+python parody_ads.py --preview
+```
+
+### Focusing on a single parody
+
+Pass the title, slug, brand, or list number via `--ad` to preview or animate a
+specific spoof:
+
+```bash
+python parody_ads.py --ad surfer
+python parody_ads.py --ad 3 --preview
+```
+
+Run `python parody_ads.py --list` to see every available identifier, and use
+`--delay` to tweak the animation speed if you prefer a faster or slower pace.

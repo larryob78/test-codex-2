@@ -7,9 +7,11 @@ Each parody is rendered as a minimal console animation using ASCII art so the
 """
 from __future__ import annotations
 
+import argparse
 import os
+import textwrap
 import time
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, Sequence
 
 
 def clear() -> None:
@@ -30,7 +32,7 @@ def play_animation(frames: Iterable[str], delay: float = 0.6) -> None:
         time.sleep(delay)
 
 
-def render_ad(ad: Dict[str, object]) -> None:
+def render_ad(ad: Dict[str, object], delay: float = 0.6) -> None:
     """Render a single parody advertisement."""
     title = ad["title"]
     brand = ad["brand"]
@@ -43,7 +45,7 @@ def render_ad(ad: Dict[str, object]) -> None:
     print(border)
     print(description)
     time.sleep(1.5)
-    play_animation(frames)
+    play_animation(frames, delay=delay)
     print("\nEND CARD: " + ad["tagline"])
     print(border)
     time.sleep(2)
@@ -243,9 +245,148 @@ ADS: List[Dict[str, object]] = [
 ]
 
 
-def main() -> None:
+def slugify(text: str) -> str:
+    """Create a simple slug from a title so it can be referenced via CLI."""
+    cleaned = [ch.lower() if ch.isalnum() else "-" for ch in text]
+    slug = "".join(cleaned)
+    while "--" in slug:
+        slug = slug.replace("--", "-")
+    return slug.strip("-")
+
+
+def list_ads() -> Sequence[str]:
+    """Return human-friendly information about each available parody."""
+    lines: List[str] = []
+    for index, ad in enumerate(ADS, start=1):
+        slug = slugify(ad["title"])
+        lines.append(f"{index}. {ad['title']} (slug: {slug})")
+    return lines
+
+
+def find_ad(identifier: str) -> Dict[str, object]:
+    """Find an advertisement by slug, title, or 1-based index."""
+
+    normalized = identifier.strip().lower()
+
+    if normalized.isdigit():
+        index = int(normalized) - 1
+        if 0 <= index < len(ADS):
+            return ADS[index]
+
+    matches: List[Dict[str, object]] = []
     for ad in ADS:
-        render_ad(ad)
+        if slugify(ad["title"]) == normalized:
+            return ad
+        if ad["title"].lower() == normalized:
+            return ad
+        if ad["brand"].lower() == normalized:
+            return ad
+        slug = slugify(ad["title"])
+        if normalized and normalized in slug:
+            matches.append(ad)
+        elif normalized and normalized in ad["title"].lower():
+            matches.append(ad)
+        elif normalized and normalized in ad["brand"].lower():
+            matches.append(ad)
+
+    if len(matches) == 1:
+        return matches[0]
+
+    available = "\n".join(list_ads())
+    raise ValueError(
+        f"Unknown advertisement '{identifier}'. Try one of:\n{available}"
+    )
+
+
+def preview_ad(ad: Dict[str, object]) -> None:
+    """Print a static preview of an advertisement without animations."""
+
+    border = "=" * 80
+    print(border)
+    print(f"{ad['title']} — {ad['brand']}")
+    print(border)
+    wrapped = textwrap.fill(ad["description"], width=76)
+    print(wrapped)
+
+    for idx, frame in enumerate(ad["frames"], start=1):
+        print("\n" + f"Frame {idx}".center(80, "-"))
+        frame_text = textwrap.dedent(frame).rstrip()
+        print(frame_text)
+
+    print("\nEND CARD: " + ad["tagline"])
+    print(border)
+
+
+def run_showcase(selected: Dict[str, object] | None, preview: bool, delay: float) -> None:
+    """Run the animated showcase or print previews depending on flags."""
+
+    ads: Sequence[Dict[str, object]]
+    if selected is None:
+        ads = ADS
+    else:
+        ads = [selected]
+
+    if preview:
+        for ad in ads:
+            preview_ad(ad)
+    else:
+        for ad in ads:
+            render_ad(ad, delay=delay)
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Animate or preview code-driven parodies of iconic television adverts."
+        )
+    )
+    parser.add_argument(
+        "--ad",
+        metavar="IDENTIFIER",
+        help=(
+            "Render a single parody by number, title, slug, or brand. "
+            "By default every ad plays in sequence."
+        ),
+    )
+    parser.add_argument(
+        "--preview",
+        action="store_true",
+        help=(
+            "Show a static preview of the ASCII art instead of the animated "
+            "sequence so you can skim the visuals quickly."
+        ),
+    )
+    parser.add_argument(
+        "--delay",
+        type=float,
+        default=0.6,
+        help="Seconds to wait between animation frames (default: 0.6).",
+    )
+    parser.add_argument(
+        "--list",
+        action="store_true",
+        help="List the available parodies and exit without rendering.",
+    )
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if args.list:
+        print("Available parodies:\n")
+        for line in list_ads():
+            print(line)
+        return
+
+    try:
+        selected_ad = find_ad(args.ad) if args.ad else None
+        run_showcase(selected_ad, preview=args.preview, delay=args.delay)
+    except ValueError as exc:
+        parser.error(str(exc))
+    except KeyboardInterrupt:
+        print("\nShowcase interrupted. Thanks for visiting the parody reel!")
 
 
 if __name__ == "__main__":
