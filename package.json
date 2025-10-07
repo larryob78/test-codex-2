@@ -1,0 +1,14 @@
+{
+  "name": "social-studio-ai",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "preview": "serve . -l 4173",
+    "preview:tunnel": "concurrently --kill-others-on-fail \"npm run preview\" \"lt --port 4173\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "localtunnel": "^2.0.2",
+    "serve": "^14.2.3"
+  }
+}
