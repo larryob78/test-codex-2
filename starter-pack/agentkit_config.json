@@ -1,0 +1,380 @@
+{
+  "version": "2025.11.devday",
+  "metadata": {
+    "title": "Eleven-Agent Production Pod",
+    "description": "AgentKit config that mirrors the Responses API loop used for the creative production workflow.",
+    "default_guardrails": {
+      "moderation": true,
+      "pii_masking": true,
+      "jailbreak_detection": true
+    }
+  },
+  "shared_tools": {
+    "web_search": {
+      "type": "built_in",
+      "tool": "web_search",
+      "description": "OpenAI hosted web search tool configured for citation-rich research."
+    },
+    "file_search": {
+      "type": "built_in",
+      "tool": "file_search",
+      "description": "Vector search over synced brand assets, briefs, and prior deliverables."
+    },
+    "computer_use": {
+      "type": "built_in",
+      "tool": "computer_use",
+      "description": "Computer use actions for UI automation tasks inside approved SaaS surfaces."
+    },
+    "image_generation": {
+      "type": "responses_tool",
+      "model": "gpt-image-1",
+      "description": "Image generation endpoint for concept art and key visuals."
+    },
+    "video_generation": {
+      "type": "http",
+      "endpoint": "v1/videos",
+      "description": "Sora 2 text-to-video surface with audio track support."
+    }
+  },
+  "agents": [
+    {
+      "id": "orchestrator",
+      "name": "Orchestrator",
+      "model": "o3",
+      "fallback_model": "gpt-5-pro",
+      "tools": ["web_search", "file_search", "computer_use"],
+      "prompt": "You are the production orchestrator. Evaluate briefs, decide which specialist to trigger next, and return a JSON handoff payload.",
+      "input_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "OrchestratorInput",
+        "type": "object",
+        "properties": {
+          "brief": {"type": "string"},
+          "brand_assets": {"type": "array", "items": {"type": "string"}},
+          "status_log": {"type": "array", "items": {"type": "object"}}
+        },
+        "required": ["brief"]
+      },
+      "output_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "OrchestratorOutput",
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "object",
+            "properties": {
+              "next_agent": {"type": "string"},
+              "reason": {"type": "string"}
+            },
+            "required": ["next_agent", "reason"]
+          },
+          "run_log": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "event": {"type": "string"},
+                "timestamp": {"type": "string"},
+                "notes": {"type": "string"}
+              },
+              "required": ["event", "timestamp"]
+            }
+          }
+        },
+        "required": ["decision"]
+      },
+      "handoff_rules": [
+        {"next_agent": "brand_librarian", "when": "Brief lacks brand canon summary"},
+        {"next_agent": "brief_architect", "when": "Brief requires structured campaign plan"},
+        {"next_agent": "qa_compliance", "when": "Asset is ready for review"}
+      ]
+    },
+    {
+      "id": "brand_librarian",
+      "name": "Brand Librarian",
+      "model": "o4-mini",
+      "tools": ["file_search"],
+      "fallback_tools": ["web_search"],
+      "prompt": "Create a BrandCard summarising tone, mandatories, exclusions, and claims. Use file search first; if facts are missing, mark them as unknown.",
+      "output_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "BrandCard",
+        "type": "object",
+        "properties": {
+          "brand_name": {"type": "string"},
+          "tone_principles": {"type": "array", "items": {"type": "string"}},
+          "mandatories": {"type": "array", "items": {"type": "string"}},
+          "prohibited_topics": {"type": "array", "items": {"type": "string"}},
+          "claims_policy": {"type": "string"},
+          "sources": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["brand_name", "tone_principles", "mandatories", "sources"]
+      },
+      "handoff_rules": [
+        {"next_agent": "brief_architect", "when": "BrandCard complete"}
+      ]
+    },
+    {
+      "id": "brief_architect",
+      "name": "Brief Architect",
+      "model": "o3",
+      "tools": ["web_search", "file_search"],
+      "prompt": "Draft the campaign brief structure with measurable objectives, audiences, and messaging pillars. Every claim needs inline citations.",
+      "output_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "CampaignBrief",
+        "type": "object",
+        "properties": {
+          "objective": {"type": "string"},
+          "audience_segments": {"type": "array", "items": {"type": "string"}},
+          "key_messages": {"type": "array", "items": {"type": "string"}},
+          "success_metrics": {"type": "array", "items": {"type": "string"}},
+          "citations": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["objective", "audience_segments", "key_messages", "citations"]
+      },
+      "handoff_rules": [
+        {"next_agent": "strategist", "when": "Brief requires competitive or channel strategy"}
+      ]
+    },
+    {
+      "id": "strategist",
+      "name": "Strategist",
+      "model": "o3",
+      "tools": ["web_search", "file_search"],
+      "prompt": "Provide channel strategy, competitive notes, and required experiments with citations.",
+      "output_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "StrategyOutput",
+        "type": "object",
+        "properties": {
+          "channel_plan": {"type": "array", "items": {"type": "string"}},
+          "competitive_takeaways": {"type": "array", "items": {"type": "string"}},
+          "experiments": {"type": "array", "items": {"type": "string"}},
+          "citations": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["channel_plan", "citations"]
+      },
+      "handoff_rules": [
+        {"next_agent": "media_planner", "when": "Media budget modeling needed"}
+      ]
+    },
+    {
+      "id": "media_planner",
+      "name": "Media Planner",
+      "model": "o4-mini",
+      "tools": ["web_search"],
+      "prompt": "Estimate CPM/CPC benchmarks, flighting schedule, and share supporting sources. Flag any data older than 18 months.",
+      "output_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "MediaPlan",
+        "type": "object",
+        "properties": {
+          "budget_allocation": {"type": "array", "items": {"type": "object"}},
+          "benchmarks": {"type": "array", "items": {"type": "string"}},
+          "risks": {"type": "array", "items": {"type": "string"}},
+          "citations": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["budget_allocation", "citations"]
+      },
+      "handoff_rules": [
+        {"next_agent": "creative_director", "when": "Media plan approved"}
+      ]
+    },
+    {
+      "id": "creative_director",
+      "name": "Creative Director",
+      "model": "gpt-5",
+      "fallback_model": "o3",
+      "tools": [],
+      "prompt": "Translate the brief into a creative platform, campaign narrative, and mood boards. Reference the BrandCard.",
+      "output_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "CreativePlatform",
+        "type": "object",
+        "properties": {
+          "platform_statement": {"type": "string"},
+          "narrative_arcs": {"type": "array", "items": {"type": "string"}},
+          "visual_directions": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["platform_statement", "narrative_arcs"]
+      },
+      "handoff_rules": [
+        {"next_agent": "copywriter", "when": "Concept language needed"},
+        {"next_agent": "art_director", "when": "Visual exploration requested"}
+      ]
+    },
+    {
+      "id": "copywriter",
+      "name": "Copywriter",
+      "model": "gpt-5",
+      "batch_model": "o4-mini",
+      "tools": [],
+      "prompt": "Produce copy variants per asset, following tone and claims policy. Return structured outputs for automation.",
+      "output_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "CopyDeck",
+        "type": "object",
+        "properties": {
+          "asset_type": {"type": "string"},
+          "primary_copy": {"type": "string"},
+          "variants": {"type": "array", "items": {"type": "string"}},
+          "notes": {"type": "string"}
+        },
+        "required": ["asset_type", "primary_copy"]
+      },
+      "handoff_rules": [
+        {"next_agent": "qa_compliance", "when": "Copy finalized"}
+      ]
+    },
+    {
+      "id": "art_director",
+      "name": "Art Director",
+      "model": "o4-mini",
+      "tools": ["image_generation", "file_search"],
+      "prompt": "Design key visuals, referencing brand assets and creative direction. Return prompts and seed details for reproducibility.",
+      "output_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "VisualConcepts",
+        "type": "object",
+        "properties": {
+          "concepts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {"type": "string"},
+                "prompt": {"type": "string"},
+                "seed": {"type": "string"},
+                "asset_links": {"type": "array", "items": {"type": "string"}}
+              },
+              "required": ["title", "prompt"]
+            }
+          }
+        },
+        "required": ["concepts"]
+      },
+      "handoff_rules": [
+        {"next_agent": "storyboard_director", "when": "Motion concepts requested"}
+      ]
+    },
+    {
+      "id": "storyboard_director",
+      "name": "Storyboard & Sora Director",
+      "model": "o3",
+      "tools": ["video_generation", "file_search"],
+      "prompt": "Convert creative concepts into storyboard beats and call the Sora API for draft sequences. Include optional TTS instructions.",
+      "output_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "StoryboardPlan",
+        "type": "object",
+        "properties": {
+          "shots": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "shot_number": {"type": "integer"},
+                "description": {"type": "string"},
+                "sora_prompt": {"type": "string"},
+                "audio_notes": {"type": "string"}
+              },
+              "required": ["shot_number", "description", "sora_prompt"]
+            }
+          },
+          "render_requests": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "duration_seconds": {"type": "integer"},
+                "aspect_ratio": {"type": "string"},
+                "reference_assets": {"type": "array", "items": {"type": "string"}}
+              },
+              "required": ["duration_seconds", "aspect_ratio"]
+            }
+          }
+        },
+        "required": ["shots"]
+      },
+      "handoff_rules": [
+        {"next_agent": "qa_compliance", "when": "Storyboard complete"},
+        {"next_agent": "producer", "when": "Exports requested"}
+      ]
+    },
+    {
+      "id": "qa_compliance",
+      "name": "QA & Compliance",
+      "model": "o4-mini",
+      "tools": [],
+      "prompt": "Evaluate outputs against guardrails, claims policy, and moderation requirements. Return pass/fail per asset with remediation steps.",
+      "output_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "ComplianceReport",
+        "type": "object",
+        "properties": {
+          "review_items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "item_id": {"type": "string"},
+                "status": {"type": "string", "enum": ["pass", "fail", "needs_review"]},
+                "issues": {"type": "array", "items": {"type": "string"}},
+                "remediation": {"type": "string"}
+              },
+              "required": ["item_id", "status"]
+            }
+          },
+          "moderation_flags": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["review_items"]
+      },
+      "handoff_rules": [
+        {"next_agent": "producer", "when": "All items pass"}
+      ]
+    },
+    {
+      "id": "producer",
+      "name": "Producer & Deck Builder",
+      "model": "o4-mini",
+      "tools": ["file_search", "computer_use"],
+      "prompt": "Assemble assets into final deliverables, update trackers, and prepare exports. Log every automated action for auditability.",
+      "output_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "ProducerOutput",
+        "type": "object",
+        "properties": {
+          "deliverables": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {"type": "string"},
+                "location": {"type": "string"},
+                "status": {"type": "string"}
+              },
+              "required": ["name", "status"]
+            }
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "timestamp": {"type": "string"},
+                "action": {"type": "string"},
+                "details": {"type": "string"}
+              },
+              "required": ["timestamp", "action"]
+            }
+          }
+        },
+        "required": ["deliverables"]
+      },
+      "handoff_rules": [
+        {"next_agent": "orchestrator", "when": "Project ready for final sign-off"}
+      ]
+    }
+  ]
+}

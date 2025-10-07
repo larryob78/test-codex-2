@@ -1,0 +1,12 @@
+{"id": "tone-001", "input": "Draft a launch email for Lumos earbuds", "expected_tone": "Warm, confident, plainspoken", "claims": ["Battery lasts 24 hours"], "required_citations": true, "notes": "Check claim accuracy"}
+{"id": "tone-002", "input": "Summarize Q2 performance for internal newsletter", "expected_tone": "Transparent and optimistic", "claims": ["Revenue up 18% YoY"], "required_citations": true, "notes": "Use approved finance deck"}
+{"id": "tone-003", "input": "Write Instagram captions for summer teaser", "expected_tone": "Playful and brief", "claims": [], "required_citations": false, "notes": "Limit to 120 characters"}
+{"id": "tone-004", "input": "Create FAQ answers about warranty", "expected_tone": "Direct and reassuring", "claims": ["Two-year warranty"], "required_citations": true, "notes": "Reference warranty PDF"}
+{"id": "tone-005", "input": "Produce LinkedIn thought-leadership intro", "expected_tone": "Authoritative but approachable", "claims": ["Backed by 5,000 customer interviews"], "required_citations": true, "notes": "Cite research doc"}
+{"id": "tone-006", "input": "Generate banner copy for retargeting", "expected_tone": "Urgent yet on-brand", "claims": [], "required_citations": false, "notes": "CTA must be 'Shop Lumos'"}
+{"id": "tone-007", "input": "Outline Sora video concept for product reveal", "expected_tone": "Cinematic and precise", "claims": ["IP68 water resistance"], "required_citations": true, "notes": "Storyboard in 6 beats"}
+{"id": "tone-008", "input": "Draft customer service macro for returns", "expected_tone": "Empathetic and concise", "claims": [], "required_citations": false, "notes": "Offer prepaid label"}
+{"id": "tone-009", "input": "Write compliance checklist for promo assets", "expected_tone": "Formal and explicit", "claims": [], "required_citations": true, "notes": "Link to legal clauses"}
+{"id": "tone-010", "input": "Create TikTok script with influencer cue", "expected_tone": "Energetic and natural", "claims": ["Noise cancellation surpasses industry average"], "required_citations": true, "notes": "Flag comparisons"}
+{"id": "tone-011", "input": "Summarize sentiment from latest social listening pull", "expected_tone": "Analytical and neutral", "claims": [], "required_citations": true, "notes": "Include percentage breakdown"}
+{"id": "tone-012", "input": "Generate headline options for OOH billboard", "expected_tone": "Bold and minimal", "claims": [], "required_citations": false, "notes": "Max 7 words"}
