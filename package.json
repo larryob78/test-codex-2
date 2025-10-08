@@ -1,0 +1,16 @@
+{
+  "name": "lovable-visual-board",
+  "version": "1.0.0",
+  "description": "Full stack drag-and-drop visual board with upload API",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "NODE_ENV=production node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "multer": "^2.0.0",
+    "nanoid": "^4.0.2"
+  }
+}
