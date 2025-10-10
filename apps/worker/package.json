@@ -1,0 +1,26 @@
+{
+  "name": "@weaverboard/worker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "ts-node src/main.ts",
+    "build": "tsup src/main.ts --dts --format esm,cjs",
+    "lint": "eslint .",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@weaverboard/nodes": "workspace:*",
+    "@weaverboard/sdk": "workspace:*",
+    "bullmq": "^4.11.3",
+    "dotenv": "^16.4.5",
+    "node-fetch": "^3.3.2",
+    "pino": "^8.19.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "tsup": "^8.0.1",
+    "typescript": "^5.4.2",
+    "vitest": "^1.5.0"
+  }
+}
