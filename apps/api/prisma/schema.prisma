@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  memberships Membership[]
+  runs        Run[]
+}
+
+model Workspace {
+  id          String        @id @default(cuid())
+  name        String
+  createdAt   DateTime      @default(now())
+  memberships Membership[]
+  workflows   Workflow[]
+  assets      Asset[]
+  creditLedger CreditLedger[]
+  subscriptions Subscription[]
+}
+
+model Membership {
+  id          String    @id @default(cuid())
+  userId      String
+  workspaceId String
+  role        String
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+}
+
+model Plan {
+  id             String   @id @default(cuid())
+  code           String   @unique
+  name           String
+  monthlyCredits Int
+  rollover       Boolean  @default(false)
+  priceCents     Int
+  subscriptions  Subscription[]
+}
+
+model Subscription {
+  id                 String   @id @default(cuid())
+  workspaceId        String
+  planId             String
+  status             String
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  workspace          Workspace @relation(fields: [workspaceId], references: [id])
+  plan               Plan      @relation(fields: [planId], references: [id])
+}
+
+model CreditLedger {
+  id          String   @id @default(cuid())
+  workspaceId String
+  delta       Int
+  reason      String
+  modelCode   String?
+  runId       String?
+  createdAt   DateTime @default(now())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+}
+
+model Asset {
+  id        String   @id @default(cuid())
+  workspaceId String
+  kind      String
+  mime      String
+  key       String
+  url       String
+  sha256    String?
+  width     Int?
+  height    Int?
+  duration  Int?
+  meta      Json?
+  createdAt DateTime @default(now())
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+}
+
+model Workflow {
+  id          String      @id @default(cuid())
+  workspaceId String
+  name        String
+  jsonGraph   Json
+  createdBy   String
+  updatedAt   DateTime @updatedAt
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  versions    WorkflowVersion[]
+  runs        Run[]
+  appPublishes AppPublish[]
+}
+
+model WorkflowVersion {
+  id        String   @id @default(cuid())
+  workflowId String
+  version   Int
+  jsonGraph Json
+  notes     String?
+  createdAt DateTime @default(now())
+  workflow  Workflow @relation(fields: [workflowId], references: [id])
+  runs      Run[]
+  appPublishes AppPublish[]
+}
+
+model AppPublish {
+  id         String   @id @default(cuid())
+  workflowId String
+  versionId  String
+  slug       String   @unique
+  isPublic   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  workflow   Workflow @relation(fields: [workflowId], references: [id])
+  version    WorkflowVersion @relation(fields: [versionId], references: [id])
+}
+
+model Run {
+  id          String   @id @default(cuid())
+  workflowId  String
+  versionId   String?
+  status      String
+  startedAt   DateTime @default(now())
+  finishedAt  DateTime?
+  nodeId      String?
+  modelCode   String?
+  inputsJson  Json?
+  outputsJson Json?
+  costCredits Int      @default(0)
+  errorJson   Json?
+  workflow    Workflow @relation(fields: [workflowId], references: [id])
+  version     WorkflowVersion? @relation(fields: [versionId], references: [id])
+}
+
+model ModelRegistry {
+  id        String   @id @default(cuid())
+  source    String
+  externalId String
+  name      String
+  schemaJson Json
+  icon      String?
+  createdAt DateTime @default(now())
+}
+
+model LoraRegistry {
+  id       String   @id @default(cuid())
+  source   String
+  url      String
+  name     String
+  metaJson Json?
+}
+
+model FeatureFlag {
+  id      String  @id @default(cuid())
+  key     String  @unique
+  enabled Boolean @default(false)
+}

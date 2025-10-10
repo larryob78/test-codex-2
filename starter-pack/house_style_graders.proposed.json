@@ -1,0 +1,73 @@
+{
+  "version": "2025.11.devday",
+  "graders": [
+    {
+      "id": "tone_consistency",
+      "name": "Tone Consistency Grader",
+      "model": "o4-mini",
+      "prompt": "Check whether the submission follows the requested tone guidance. Respond using the schema.",
+      "output_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "ToneGrade",
+        "type": "object",
+        "properties": {
+          "score": {"type": "integer", "minimum": 1, "maximum": 5},
+          "verdict": {"type": "string", "enum": ["pass", "fail"]},
+          "evidence": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["score", "verdict"]
+      }
+    },
+    {
+      "id": "claim_risk",
+      "name": "Claim Risk Grader",
+      "model": "o3",
+      "prompt": "Identify risky or unsubstantiated claims. Fail if any claim lacks evidence or violates policy.",
+      "output_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "ClaimRisk",
+        "type": "object",
+        "properties": {
+          "risk_level": {"type": "string", "enum": ["low", "medium", "high"]},
+          "flagged_claims": {"type": "array", "items": {"type": "string"}},
+          "verdict": {"type": "string", "enum": ["pass", "fail"]}
+        },
+        "required": ["risk_level", "verdict"]
+      }
+    },
+    {
+      "id": "source_coverage",
+      "name": "Source Coverage Grader",
+      "model": "o3",
+      "prompt": "Ensure every factual statement is supported by citations. Highlight gaps in sourcing.",
+      "output_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "SourceCoverage",
+        "type": "object",
+        "properties": {
+          "coverage": {"type": "integer", "minimum": 0, "maximum": 100},
+          "missing_elements": {"type": "array", "items": {"type": "string"}},
+          "verdict": {"type": "string", "enum": ["pass", "fail"]}
+        },
+        "required": ["coverage", "verdict"]
+      }
+    },
+    {
+      "id": "readability",
+      "name": "Readability Grader",
+      "model": "o4-mini",
+      "prompt": "Score readability and suggest concise edits if needed.",
+      "output_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "ReadabilityGrade",
+        "type": "object",
+        "properties": {
+          "score": {"type": "integer", "minimum": 1, "maximum": 5},
+          "issues": {"type": "array", "items": {"type": "string"}},
+          "recommendations": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["score"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+version: '3.9'
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: infra/dockerfiles/web.Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - ../.env.web
+    depends_on:
+      - api
+  api:
+    build:
+      context: ..
+      dockerfile: infra/dockerfiles/api.Dockerfile
+    ports:
+      - "3001:3001"
+    env_file:
+      - ../.env.api
+    depends_on:
+      - postgres
+      - redis
+  worker:
+    build:
+      context: ..
+      dockerfile: infra/dockerfiles/worker.Dockerfile
+    env_file:
+      - ../.env.worker
+    depends_on:
+      - redis
+      - api
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: weaver
+      POSTGRES_PASSWORD: weaver
+      POSTGRES_DB: weaver
+    ports:
+      - "5432:5432"
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+  s3:
+    image: localstack/localstack:2.3
+    environment:
+      - SERVICES=s3
+    ports:
+      - "4566:4566"
