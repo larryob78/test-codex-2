@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Motion Particle Camera</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main>
+    <h1>Motion Particle Camera</h1>
+    <p class="notice">Click start and allow camera access to generate particles wherever motion is detected.</p>
+    <div class="canvas-container">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="particleCanvas"></canvas>
+    </div>
+    <button id="startButton" type="button" class="start-button">Start camera</button>
+    <p class="hint">Move in front of the camera to see particle trails. Use brighter lighting for better results.</p>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
