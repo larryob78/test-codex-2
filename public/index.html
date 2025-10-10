@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lovable Dropboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: radial-gradient(circle at top left, #1a1a40, #090910 55%, #03030f);
+        --accent: #6b73ff;
+        --accent-2: #00e0ff;
+        --text: #f5f5ff;
+        --glass: rgba(18, 22, 40, 0.65);
+        --blur: 18px;
+        --danger: #ff4d8d;
+        font-size: 16px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Poppins", "Segoe UI", system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        display: flex;
+        justify-content: center;
+        padding: 60px 20px 80px;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        width: 420px;
+        height: 420px;
+        filter: blur(110px);
+        opacity: 0.55;
+        pointer-events: none;
+        z-index: 0;
+        transition: transform 400ms ease;
+      }
+
+      body::before {
+        background: linear-gradient(135deg, #2f00ff, #ff0099);
+        top: -120px;
+        right: -110px;
+      }
+
+      body::after {
+        background: linear-gradient(135deg, #0affc6, #0099ff);
+        bottom: -160px;
+        left: -100px;
+      }
+
+      main {
+        width: min(1200px, 100%);
+        z-index: 1;
+      }
+
+      header {
+        display: grid;
+        gap: 18px;
+        margin-bottom: 30px;
+      }
+
+      h1 {
+        font-size: clamp(2.2rem, 4vw, 3.4rem);
+        font-weight: 700;
+        letter-spacing: -0.025em;
+        margin: 0;
+        text-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      }
+
+      .subtitle {
+        max-width: 650px;
+        font-size: clamp(1rem, 2vw, 1.25rem);
+        color: rgba(245, 245, 255, 0.78);
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: center;
+      }
+
+      .dropzone {
+        position: relative;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 26px;
+        padding: 50px clamp(24px, 5vw, 80px);
+        background: var(--glass);
+        backdrop-filter: blur(var(--blur));
+        display: grid;
+        place-items: center;
+        text-align: center;
+        gap: 24px;
+        transition: border 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 30px 80px rgba(0, 0, 0, 0.35);
+        cursor: pointer;
+      }
+
+      .dropzone:hover {
+        transform: translateY(-4px);
+      }
+
+      .dropzone.active {
+        border-color: rgba(105, 118, 255, 0.8);
+        box-shadow: inset 0 0 0 2px rgba(105, 118, 255, 0.55), 0 40px 90px rgba(0, 0, 0, 0.5);
+      }
+
+      .drop-icon {
+        width: clamp(72px, 10vw, 120px);
+        aspect-ratio: 1;
+        border-radius: 32px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, rgba(105, 118, 255, 0.85), rgba(9, 255, 211, 0.7));
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+      }
+
+      .drop-icon svg {
+        width: 52%;
+        fill: #0b1024;
+      }
+
+      .dropzone strong {
+        font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+      }
+
+      .dropzone p {
+        margin: 0;
+        color: rgba(245, 245, 255, 0.65);
+      }
+
+      .dropzone button {
+        background: linear-gradient(135deg, rgba(107, 115, 255, 0.9), rgba(0, 102, 255, 0.95));
+        color: #fff;
+        border: none;
+        font-weight: 600;
+        padding: 14px 26px;
+        border-radius: 999px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: transform 160ms ease, box-shadow 160ms ease;
+        box-shadow: 0 15px 45px rgba(0, 0, 0, 0.35);
+      }
+
+      .dropzone button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 55px rgba(0, 0, 0, 0.45);
+      }
+
+      form.embed-form {
+        display: flex;
+        gap: 12px;
+        width: min(520px, 100%);
+        margin: 0 auto;
+      }
+
+      form.embed-form input {
+        flex: 1;
+        padding: 14px 18px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 0.95rem;
+      }
+
+      form.embed-form button {
+        padding: 0 22px;
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(135deg, rgba(0, 224, 255, 0.9), rgba(0, 132, 255, 0.95));
+        color: var(--text);
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      #gallery {
+        margin-top: 38px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 26px;
+      }
+
+      .card {
+        position: relative;
+        border-radius: 24px;
+        overflow: hidden;
+        background: rgba(15, 18, 35, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 22px 50px rgba(0, 0, 0, 0.35);
+        display: grid;
+        grid-template-rows: auto 1fr;
+        min-height: 200px;
+        transition: transform 200ms ease, box-shadow 200ms ease;
+      }
+
+      .card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 32px 60px rgba(0, 0, 0, 0.45);
+      }
+
+      .card figure {
+        margin: 0;
+        position: relative;
+        background: rgba(255, 255, 255, 0.02);
+        overflow: hidden;
+        display: grid;
+        place-items: center;
+      }
+
+      .card img,
+      .card video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .card iframe {
+        width: 100%;
+        min-height: 220px;
+        border: none;
+      }
+
+      .card audio {
+        width: 100%;
+      }
+
+      .card .content {
+        padding: 18px 20px 20px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .card .meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.55);
+      }
+
+      .pill {
+        border-radius: 999px;
+        padding: 4px 10px;
+        background: rgba(255, 255, 255, 0.08);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .delete {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        background: rgba(0, 0, 0, 0.45);
+        color: rgba(255, 255, 255, 0.8);
+        cursor: pointer;
+        transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+      }
+
+      .delete:hover {
+        background: rgba(255, 77, 141, 0.9);
+        color: #fff;
+        transform: scale(1.05);
+      }
+
+      .empty-state {
+        margin-top: 42px;
+        padding: 40px;
+        border-radius: 24px;
+        border: 1px dashed rgba(255, 255, 255, 0.2);
+        text-align: center;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(6, 8, 24, 0.92);
+        padding: 14px 22px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        min-width: 240px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 180ms ease;
+      }
+
+      .toast.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .toast.success {
+        border-color: rgba(0, 255, 189, 0.45);
+      }
+
+      .toast.error {
+        border-color: rgba(255, 77, 141, 0.7);
+      }
+
+      .toast span {
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 720px) {
+        body {
+          padding: 40px 16px 60px;
+        }
+
+        .dropzone {
+          padding: 40px 22px;
+        }
+
+        form.embed-form {
+          flex-direction: column;
+        }
+
+        form.embed-form button {
+          width: 100%;
+          padding: 14px 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Drop anything. Watch it glow.</h1>
+        <p class="subtitle">
+          Paste, drag, or upload visuals, audio, docs, and links. Everything flows into a living
+          gallery ready to remix inside Lovable.
+        </p>
+      </header>
+
+      <section class="dropzone" id="dropzone">
+        <div class="drop-icon">
+          <svg viewBox="0 0 24 24" role="presentation">
+            <path
+              d="M11.47 3.17a1 1 0 0 1 1.06 0l6.5 4a1 1 0 0 1 .47.85v8a1 1 0 0 1-.47.85l-6.5 4a1 1 0 0 1-1.06 0l-6.5-4A1 1 0 0 1 4 16.02v-8a1 1 0 0 1 .47-.85l6.5-4zM6 8.27v7.09l5.5 3.38V11.7L6 8.27zm7.5 10.47L19 15.4V8.27l-5.5 3.42v7.05zM12 4.85 7.2 7.77 12 10.7l4.8-2.92L12 4.85z"
+            />
+          </svg>
+        </div>
+        <div>
+          <strong>Drop files, paste from your clipboard, or click to upload</strong>
+          <p>Images, videos, audio, docs, YouTube, Vimeo, any URL—make it shine.</p>
+        </div>
+        <div class="controls">
+          <button id="browseBtn" type="button">Browse files</button>
+          <form class="embed-form" id="embedForm">
+            <input type="url" name="url" placeholder="https:// add any link" required />
+            <button type="submit">Embed link</button>
+          </form>
+        </div>
+        <input type="file" id="fileInput" hidden multiple />
+      </section>
+
+      <section id="gallery" aria-live="polite"></section>
+      <div class="empty-state" id="emptyState" hidden>
+        Drop your first piece or paste a link to start building your board.
+      </div>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">
+      <span id="toastMessage"></span>
+    </div>
+
+    <template id="cardTemplate">
+      <article class="card">
+        <button class="delete" type="button" aria-label="Remove item">✕</button>
+        <figure class="preview"></figure>
+        <div class="content">
+          <div class="meta">
+            <span class="label pill"></span>
+            <time class="timestamp"></time>
+          </div>
+          <h3 class="title"></h3>
+          <a class="link" target="_blank" rel="noopener"></a>
+        </div>
+      </article>
+    </template>
+
+    <script>
+      const dropzone = document.getElementById('dropzone');
+      const fileInput = document.getElementById('fileInput');
+      const browseBtn = document.getElementById('browseBtn');
+      const gallery = document.getElementById('gallery');
+      const emptyState = document.getElementById('emptyState');
+      const embedForm = document.getElementById('embedForm');
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      const cardTemplate = document.getElementById('cardTemplate');
+
+      const API = {
+        async list() {
+          const res = await fetch('/api/items');
+          if (!res.ok) throw new Error('Failed to load items');
+          return res.json();
+        },
+        async upload(files) {
+          const body = new FormData();
+          files.forEach((file) => body.append('files', file));
+          const res = await fetch('/api/upload', { method: 'POST', body });
+          if (!res.ok) throw new Error('Upload failed');
+          return res.json();
+        },
+        async embed(url) {
+          const res = await fetch('/api/embed', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url }),
+          });
+          if (!res.ok) throw new Error('Could not embed link');
+          return res.json();
+        },
+        async remove(id) {
+          const res = await fetch(`/api/items/${id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Failed to delete item');
+        },
+      };
+
+      function showToast(message, type = 'success') {
+        toastMessage.textContent = message;
+        toast.className = `toast show ${type}`;
+        clearTimeout(showToast.timeout);
+        showToast.timeout = setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2800);
+      }
+
+      function formatBytes(bytes) {
+        if (!bytes && bytes !== 0) return '';
+        const units = ['B', 'KB', 'MB', 'GB'];
+        let size = bytes;
+        let unit = 0;
+        while (size >= 1024 && unit < units.length - 1) {
+          size /= 1024;
+          unit++;
+        }
+        return `${size.toFixed(size < 10 && unit ? 1 : 0)} ${units[unit]}`;
+      }
+
+      function timeAgo(date) {
+        const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+        const intervals = [
+          { label: 'y', seconds: 31536000 },
+          { label: 'mo', seconds: 2592000 },
+          { label: 'd', seconds: 86400 },
+          { label: 'h', seconds: 3600 },
+          { label: 'm', seconds: 60 },
+        ];
+
+        for (const interval of intervals) {
+          const count = Math.floor(seconds / interval.seconds);
+          if (count >= 1) return `${count}${interval.label} ago`;
+        }
+
+        return 'Just now';
+      }
+
+      function renderEmbed(item, figure, link) {
+        if (item.provider === 'youtube' || item.provider === 'vimeo') {
+          const iframe = document.createElement('iframe');
+          iframe.src = item.src;
+          iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+          iframe.allowFullscreen = true;
+          figure.appendChild(iframe);
+          link.textContent = item.title || item.originalUrl;
+          link.href = item.originalUrl;
+        } else if (item.type === 'link') {
+          const wrapper = document.createElement('div');
+          wrapper.style.padding = '50px 30px';
+          wrapper.style.textAlign = 'center';
+          wrapper.innerHTML = `
+            <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.7)">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.5 4.5 12 6l4.5 4.5-1.5 1.5L10.5 7.5 9 9l-3-3 3-3 1.5 1.5L13.5 1.5 15 3l-1.5 1.5ZM4.5 13.5 6 12l4.5 4.5L9 18l-4.5-4.5Z" />
+            </svg>`;
+          figure.appendChild(wrapper);
+          link.textContent = item.title || item.originalUrl;
+          link.href = item.originalUrl;
+        }
+      }
+
+      function createCard(item) {
+        const card = cardTemplate.content.firstElementChild.cloneNode(true);
+        const figure = card.querySelector('.preview');
+        const label = card.querySelector('.label');
+        const timestamp = card.querySelector('.timestamp');
+        const title = card.querySelector('.title');
+        const link = card.querySelector('.link');
+        const deleteBtn = card.querySelector('.delete');
+
+        card.dataset.id = item.id;
+        timestamp.textContent = timeAgo(item.createdAt);
+
+        if (item.type === 'image') {
+          const img = document.createElement('img');
+          img.src = item.src;
+          img.alt = item.name || item.title || 'Uploaded image';
+          figure.appendChild(img);
+          label.textContent = 'Image';
+          title.textContent = item.name || item.title || 'Image upload';
+          link.textContent = 'Open full image';
+          link.href = item.src;
+        } else if (item.type === 'video') {
+          const video = document.createElement('video');
+          video.src = item.src;
+          video.controls = true;
+          figure.appendChild(video);
+          label.textContent = 'Video';
+          title.textContent = item.name || item.title || 'Video upload';
+          link.textContent = 'Open video';
+          link.href = item.src;
+        } else if (item.type === 'audio') {
+          const audio = document.createElement('audio');
+          audio.src = item.src;
+          audio.controls = true;
+          figure.appendChild(audio);
+          label.textContent = 'Audio';
+          title.textContent = item.name || item.title || 'Audio upload';
+          link.textContent = 'Download audio';
+          link.href = item.src;
+        } else if (item.type === 'file') {
+          const doc = document.createElement('div');
+          doc.style.padding = '40px 30px';
+          doc.style.textAlign = 'center';
+          doc.innerHTML = `
+            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="1.5">
+              <path d="M14 2H6.5A1.5 1.5 0 0 0 5 3.5v17A1.5 1.5 0 0 0 6.5 22h11A1.5 1.5 0 0 0 19 20.5V7l-5-5z" />
+              <path d="M14 2v5h5" />
+              <path d="M8 13h8M8 17h5" />
+            </svg>`;
+          figure.appendChild(doc);
+          label.textContent = 'File';
+          title.textContent = item.name || 'File upload';
+          link.textContent = `${formatBytes(item.size)} · Download`;
+          link.href = item.src;
+          link.download = item.name || 'download';
+        } else {
+          renderEmbed(item, figure, link);
+          label.textContent = item.provider ? item.provider : 'Link';
+          title.textContent = item.title || 'Link';
+          if (!link.textContent) {
+            link.textContent = 'Open link';
+            link.href = item.src;
+          }
+        }
+
+        deleteBtn.addEventListener('click', async () => {
+          try {
+            await API.remove(item.id);
+            card.remove();
+            showToast('Removed item', 'success');
+            toggleEmptyState();
+          } catch (error) {
+            showToast(error.message, 'error');
+          }
+        });
+
+        return card;
+      }
+
+      function toggleEmptyState() {
+        emptyState.hidden = gallery.children.length > 0;
+      }
+
+      async function bootstrap() {
+        try {
+          const items = await API.list();
+          items
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .forEach((item) => gallery.appendChild(createCard(item)));
+          toggleEmptyState();
+        } catch (error) {
+          showToast(error.message, 'error');
+        }
+      }
+
+      function handleFiles(files) {
+        if (!files.length) return;
+        dropzone.classList.add('active');
+        API.upload(Array.from(files))
+          .then((uploaded) => {
+            uploaded.forEach((item) => {
+              gallery.prepend(createCard(item));
+            });
+            showToast('Upload complete');
+            toggleEmptyState();
+          })
+          .catch((error) => {
+            showToast(error.message, 'error');
+          })
+          .finally(() => {
+            dropzone.classList.remove('active');
+          });
+      }
+
+      browseBtn.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', (event) => handleFiles(event.target.files));
+
+      dropzone.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        dropzone.classList.add('active');
+      });
+
+      dropzone.addEventListener('dragleave', () => dropzone.classList.remove('active'));
+
+      dropzone.addEventListener('drop', (event) => {
+        event.preventDefault();
+        dropzone.classList.remove('active');
+        const files = Array.from(event.dataTransfer.files || []);
+        if (files.length) {
+          handleFiles(files);
+          return;
+        }
+
+        const text = event.dataTransfer.getData('text');
+        if (text && /^https?:\/\//i.test(text.trim())) {
+          API.embed(text.trim())
+            .then((item) => {
+              gallery.prepend(createCard(item));
+              showToast('Link embedded');
+              toggleEmptyState();
+            })
+            .catch((error) => showToast(error.message, 'error'));
+        }
+      });
+
+      window.addEventListener('paste', (event) => {
+        const clipboardFiles = Array.from(event.clipboardData.files || []);
+        if (clipboardFiles.length) {
+          handleFiles(clipboardFiles);
+          return;
+        }
+
+        const text = event.clipboardData.getData('text');
+        if (text && /^https?:\/\//i.test(text.trim())) {
+          API.embed(text.trim())
+            .then((item) => {
+              gallery.prepend(createCard(item));
+              showToast('Link embedded');
+              toggleEmptyState();
+            })
+            .catch((error) => showToast(error.message, 'error'));
+        }
+      });
+
+      embedForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const formData = new FormData(embedForm);
+        const url = formData.get('url');
+        if (!url) return;
+        embedForm.reset();
+        API.embed(url)
+          .then((item) => {
+            gallery.prepend(createCard(item));
+            showToast('Link embedded');
+            toggleEmptyState();
+          })
+          .catch((error) => showToast(error.message, 'error'));
+      });
+
+      bootstrap();
+    </script>
+  </body>
+</html>
