@@ -1,0 +1,29 @@
+{
+  "nodes": [
+    {
+      "id": "prompt",
+      "label": "Prompt",
+      "kind": "text",
+      "props": { "prompt": "Describe a surreal forest of neon trees" },
+      "position": { "x": 0, "y": 0 }
+    },
+    {
+      "id": "enhancer",
+      "label": "Prompt Enhancer",
+      "kind": "text",
+      "props": { "tone": "lush cinematic" },
+      "position": { "x": 260, "y": 0 }
+    },
+    {
+      "id": "output",
+      "label": "Output",
+      "kind": "helper",
+      "props": {},
+      "position": { "x": 520, "y": 0 }
+    }
+  ],
+  "edges": [
+    { "id": "e1", "source": "prompt", "target": "enhancer" },
+    { "id": "e2", "source": "enhancer", "target": "output" }
+  ]
+}
