@@ -1,16 +1,21 @@
 {
-  "name": "lovable-visual-board",
-  "version": "1.0.0",
-  "description": "Full stack drag-and-drop visual board with upload API",
-  "type": "module",
+  "name": "weaverboard",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@8.15.4",
   "scripts": {
-    "dev": "node server.js",
-    "start": "NODE_ENV=production node server.js"
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "format": "prettier --write ."
   },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "multer": "^2.0.0",
-    "nanoid": "^4.0.2"
-  }
+  "devDependencies": {
+    "turbo": "^1.12.5",
+    "prettier": "^3.2.5"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }
