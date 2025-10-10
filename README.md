@@ -1,3 +1,19 @@
+# Lovable Dropboard
+
+A full-stack drag-and-drop gallery designed for Lovable. Drop files, paste from the clipboard, or
+embed URLs and watch them glow inside an immersive neon interface. The Express backend stores
+uploaded files locally and keeps a JSON catalogue so your board persists across restarts.
+
+## Features
+
+- 🔥 Glassmorphism-inspired front end with drag & drop, paste, and manual upload controls
+- 🧠 Smart link detection for YouTube, Vimeo, images, videos, audio, and generic URLs
+- 💾 Express API with Multer-based file uploads and persistent JSON storage
+- 🧹 REST endpoints to list, create, and delete board items
+
+## Quick start
+
+```bash
 # Storyboard AI Prototype
 
 This repository contains a lightweight implementation of the Storyboard AI platform described in the specification. It ships with a FastAPI backend that exposes the core REST resources and a React + Tailwind CSS frontend that visualises the experience across the dashboard, storyboard canvas, and generation panels.
@@ -77,6 +93,24 @@ npm install
 npm run dev
 ```
 
+The server boots on [http://localhost:3000](http://localhost:3000). Open the page, then drag files or
+paste URLs to see them appear instantly. The `/uploads` folder contains user uploads and can be wired
+into Lovable file storage as needed.
+
+## API
+
+| Method | Endpoint        | Description                                |
+| ------ | --------------- | ------------------------------------------ |
+| GET    | `/api/items`    | Returns every stored gallery item          |
+| POST   | `/api/upload`   | Accepts `multipart/form-data` with files   |
+| POST   | `/api/embed`    | Accepts `{ "url": "https://..." }` payload |
+| DELETE | `/api/items/:id`| Deletes an item (and uploaded file if any) |
+
+## Deployment notes
+
+- Persist the `uploads/` and `data/` directories between deploys to keep assets
+- Set `PORT` via environment variable when hosting on Lovable
+- Add reverse proxy or HTTPS at the platform level as required
 The development server starts on `http://localhost:5173` and proxies `/api` and `/uploads` to `http://localhost:8000` by default. Adjust the target by exporting `VITE_API_BASE_URL` before running the dev server.
 
 Once the frontend is running, visit `http://localhost:5173/preview` to explore a fully art-directed UI/UX showcase that presents the dashboard grid, frame workspace, and generation review flows with cinematic styling. This preview is fed by curated mock data so designers and stakeholders can review the look-and-feel without requiring live backend data.

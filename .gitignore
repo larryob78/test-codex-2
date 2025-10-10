@@ -1,3 +1,11 @@
+node_modules
+npm-debug.log*
+.DS_Store
+uploads/*
+!uploads/.gitkeep
+data/*.json
+!data/.gitkeep
+.env
 # Python
 __pycache__/
 *.py[cod]
