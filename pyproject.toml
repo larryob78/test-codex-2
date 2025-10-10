@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentkit"
+version = "0.1.0"
+description = "Utilities for building and packaging OpenAI AgentKit configurations"
+readme = "README.md"
+authors = [{ name = "AgentKit Maintainers" }]
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+]
+
+[project.scripts]
+agentkit = "agentkit.cli:main"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+addopts = "-ra"
+
+[tool.setuptools.packages.find]
+include = ["agentkit"]
