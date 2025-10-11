@@ -1,3 +1,11 @@
+export interface ProjectSummary {
+  id: string;
+  name: string;
+  description?: string;
+  frames?: string[];
+  updated_at: string;
+}
+
 export interface Frame {
   id: string;
   project_id: string;

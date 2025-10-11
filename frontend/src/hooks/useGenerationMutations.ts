@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
 
+import { confirmGeneration, generateForFrame } from '../state/mockService';
 import { GenerationSettingsInput } from '../state/types';
 
 const useGenerationMutations = (frameId?: string, projectId?: string) => {
@@ -17,16 +17,10 @@ const useGenerationMutations = (frameId?: string, projectId?: string) => {
 
   const generate = useMutation({
     mutationFn: async (settings: GenerationSettingsInput) => {
-      if (!frameId) return [];
-      const payload = {
-        mode: settings.mode,
-        iterations: settings.iterations ?? (settings.mode === 'turbo' ? 4 : 2),
-        style_strength: 75,
-        prompt_weight: 80,
-        aspect_ratio: '16:9',
-      };
-      const response = await axios.post(`/api/frames/${frameId}/generate`, payload);
-      return response.data;
+      if (!frameId) {
+        throw new Error('Frame not selected');
+      }
+      return generateForFrame(frameId, settings);
     },
     onSuccess: () => {
       invalidateRelatedQueries();
@@ -34,10 +28,7 @@ const useGenerationMutations = (frameId?: string, projectId?: string) => {
   });
 
   const confirm = useMutation({
-    mutationFn: async (generationId: string) => {
-      const response = await axios.post(`/api/generations/${generationId}/confirm`);
-      return response.data;
-    },
+    mutationFn: (generationId: string) => confirmGeneration(generationId),
     onSuccess: () => {
       invalidateRelatedQueries();
     },
