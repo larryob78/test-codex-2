@@ -1,17 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 
-import { ProjectDetail } from '../state/types';
-
-const fetchProject = async (projectId: string): Promise<ProjectDetail> => {
-  const response = await axios.get<ProjectDetail>(`/api/projects/${projectId}`);
-  return response.data;
-};
+import { getProjectDetail } from '../state/mockService';
 
 const useProjectDetail = (projectId: string) => {
   return useQuery({
     queryKey: ['project', projectId],
-    queryFn: () => fetchProject(projectId),
+    queryFn: () => getProjectDetail(projectId),
     enabled: Boolean(projectId),
   });
 };

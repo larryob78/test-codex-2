@@ -1,23 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 
-export interface ProjectSummary {
-  id: string;
-  name: string;
-  description?: string;
-  frames?: string[];
-  updated_at: string;
-}
-
-const fetchProjects = async (): Promise<ProjectSummary[]> => {
-  const response = await axios.get<ProjectSummary[]>('/api/projects');
-  return response.data;
-};
+import { listProjectSummaries } from '../state/mockService';
+import { ProjectSummary } from '../state/types';
 
 const useProjects = () => {
   return useQuery({
     queryKey: ['projects'],
-    queryFn: fetchProjects,
+    queryFn: listProjectSummaries,
     initialData: [],
   });
 };

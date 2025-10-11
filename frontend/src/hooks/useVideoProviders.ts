@@ -1,17 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 
-import { VideoProvider } from '../state/types';
-
-const fetchVideoProviders = async (): Promise<VideoProvider[]> => {
-  const response = await axios.get<VideoProvider[]>('/api/ai/video/providers');
-  return response.data;
-};
+import { listVideoProviders } from '../state/mockService';
 
 const useVideoProviders = () => {
   return useQuery({
     queryKey: ['video-providers'],
-    queryFn: fetchVideoProviders,
+    queryFn: listVideoProviders,
     initialData: [],
   });
 };
