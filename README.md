@@ -467,3 +467,7 @@ pnpm test
 ## Support
 
 For issues or enhancements, open a ticket or contribute a pull request with clear reproduction steps and tests.
+
+## Phone Splat Studio Prototype
+
+A mobile-first prototype for capturing a person from the camera, isolating them with on-device segmentation, and placing the cutout as a touch-manipulable splat in a 3D scene is available at `mobile-splat/index.html`.
