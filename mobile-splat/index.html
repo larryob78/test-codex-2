@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Phone Splat Studio</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="controls">
+        <h1>Phone Splat Studio</h1>
+        <p>
+          Capture a person, isolate them, then place the result in a 3D scene and pinch to scale.
+        </p>
+
+        <div class="button-row">
+          <button id="startCameraBtn">Start camera</button>
+          <button id="captureBtn" disabled>Capture splat</button>
+        </div>
+
+        <div class="button-row">
+          <button id="toggleGridBtn">Toggle grid</button>
+          <button id="clearSceneBtn">Clear splats</button>
+        </div>
+
+        <label class="slider-field">
+          Splat softness
+          <input id="softnessSlider" type="range" min="0" max="30" value="12" />
+        </label>
+
+        <p class="hint">
+          Tap scene to place. Drag to move selected splat. Pinch to scale. Two-finger rotate to spin.
+        </p>
+      </section>
+
+      <section class="preview-stack">
+        <video id="cameraFeed" playsinline muted></video>
+        <canvas id="overlayCanvas"></canvas>
+      </section>
+
+      <section id="sceneContainer" aria-label="3D placement scene"></section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
