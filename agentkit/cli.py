@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Sequence
 
 from .builder import AgentKitBundleBuilder
+from .tool_scaffolder import ToolScaffolder
 
 
 def build_command(args: argparse.Namespace) -> None:
@@ -18,6 +19,16 @@ def build_command(args: argparse.Namespace) -> None:
     if archive_path is not None:
         print(f"Archive created at {archive_path}")
 
+
+
+def scaffold_tool_command(args: argparse.Namespace) -> None:
+    scaffolder = ToolScaffolder(Path(args.output))
+    target_dir = scaffolder.scaffold(
+        name=args.name,
+        description=args.description,
+        force=args.force,
+    )
+    print(f"Tool scaffold written to {target_dir}")
 
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="AgentKit bundle utilities")
@@ -39,6 +50,28 @@ def create_parser() -> argparse.ArgumentParser:
         help="Optional path for a .zip archive of the bundle",
     )
     build_parser.set_defaults(func=build_command)
+
+    scaffold_parser = subparsers.add_parser(
+        "scaffold-tool",
+        help="Create a starter folder for a new tool definition",
+    )
+    scaffold_parser.add_argument("--name", required=True, help="Human-friendly tool name")
+    scaffold_parser.add_argument(
+        "--description",
+        default="Starter scaffold for a new AgentKit tool",
+        help="Short description used in the generated schema",
+    )
+    scaffold_parser.add_argument(
+        "--output",
+        default="starter-pack/tools",
+        help="Parent directory where the tool folder should be generated",
+    )
+    scaffold_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite scaffold files if the target folder already exists",
+    )
+    scaffold_parser.set_defaults(func=scaffold_tool_command)
 
     return parser
 

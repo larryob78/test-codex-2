@@ -65,6 +65,17 @@ python -m agentkit.cli build --config starter-pack/agentkit_config.json --output
 
 After the build completes, run the automated checks to make sure the bundle is
 ready for import:
+
+### Scaffold a new tool
+
+Use the CLI to generate a starter folder for a new tool schema and documentation:
+
+```bash
+agentkit scaffold-tool --name "Ad Concept Generator" --description "Generate campaign concepts from a short prompt"
+```
+
+By default this creates `starter-pack/tools/ad-concept-generator/` with a `schema.json`
+and `README.md`. Pass `--output` to choose another parent directory.
 # Retro Robot Pursuit Monitor
 
 This repository hosts a single-page retro-inspired surveillance simulation. Open `index.html` in any modern browser to view an animated 1980s-style computer feed showing robots chasing humans, complete with CRT effects and synth audio.
